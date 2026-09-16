@@ -1,0 +1,38 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]  # Сборка запускается при каждом коммите в main/master
+  workflow_dispatch:            # Добавляет кнопку для ручного запуска в интерфейсе GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk libtool autoconf libssl-dev libffi-dev libncurses5-dev libncursesw5-dev zlib1g-dev build-essential
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade buildozer kivy Cython
+
+    - name: Build APK with Buildozer
+      run: |
+        buildozer -v android debug
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-kivy-app
+        path: bin/*.apk
